@@ -7,34 +7,43 @@ drug_df <- read.csv("2022_VSRR_Provisional_Drug_Overdose_Death_Counts.csv")
 drug_df[drug_df == ""] <- NA
 drug_df <- na.omit(drug_df)
 
-combined_df <- aggregate(. ~ State.Name, data = drug_df, paste, collapse = ", ")
-combined_df$Year <- sapply(strsplit(combined_df$Year, ","), function(x) x[1])
-combined_df$State <- sapply(strsplit(combined_df$State, ","), function(x) x[1])
-combined_df$Period <- sapply(strsplit(combined_df$Period, ","), function(x) x[1])
+drug_df2 <- aggregate(. ~ State.Name, data = drug_df, paste, collapse = ", ")
+drug_df2$Year <- sapply(strsplit(drug_df2$Year, ","), function(x) x[1])
+drug_df2$State <- sapply(strsplit(drug_df2$State, ","), function(x) x[1])
+drug_df2$Period <- sapply(strsplit(drug_df2$Period, ","), function(x) x[1])
 
-combined_df$Percent.Complete <- as.character(combined_df$Percent.Complete)
-combined_df$Percent.Complete <- sapply(strsplit(combined_df$Percent.Complete, ","), function(x) round(mean(as.numeric(x)), 1))
+drug_df2$Percent.Complete <- as.character(drug_df2$Percent.Complete)
+drug_df2$Percent.Complete <- sapply(strsplit(drug_df2$Percent.Complete, ","), function(x) round(mean(as.numeric(x)), 1))
 
-combined_df$Percent.Pending.Investigation <- as.character(combined_df$Percent.Pending.Investigation)
-combined_df$Percent.Pending.Investigation <- sapply(strsplit(combined_df$Percent.Pending.Investigation, ","), function(x) round(mean(as.numeric(x)), 1))
+drug_df2$Percent.Pending.Investigation <- as.character(drug_df2$Percent.Pending.Investigation)
+drug_df2$Percent.Pending.Investigation <- sapply(strsplit(drug_df2$Percent.Pending.Investigation, ","), function(x) round(mean(as.numeric(x)), 1))
 
-combined_df$Predicted.Value <- as.character(combined_df$Predicted.Value)
-combined_df$Predicted.Value <- sapply(strsplit(combined_df$Predicted.Value, ","), function(x) round(mean(as.numeric(x)), 1))                                                    
-                                                    
-split_month <- strsplit(combined_df$Month, ",")
+drug_df2$Predicted.Value <- as.character(drug_df2$Predicted.Value)
+drug_df2$Predicted.Value <- sapply(strsplit(drug_df2$Predicted.Value, ","), function(x) round(mean(as.numeric(x)), 1))
+
+split_month <- strsplit(drug_df2$Month, ",")
 unique_month <- lapply(split_month, unique)
-combined_df$Month <- sapply(unique_month, paste, collapse = ",")
+drug_df2$Month <- sapply(unique_month, paste, collapse = ",")
 
-split_indicator <- strsplit(combined_df$Indicator, ",")
+split_indicator <- strsplit(drug_df2$Indicator, ",")
 unique_indicator <- lapply(split_indicator, unique)
-combined_df$Indicator <- sapply(unique_indicator, paste, collapse = ",")
-                                                    
-combined_df$region <- ifelse(combined_df$State == "CT" | combined_df$State == "ME" | combined_df$State == "MA" | combined_df$State == "NH" | combined_df$State == "RI" | combined_df$State == "VT", "New England",
-                              ifelse(combined_df$State == "DE" | combined_df$State == "DC" | combined_df$State == "MD" | combined_df$State == "NJ" | combined_df$State == "NY" | combined_df$State == "PA", "Mideast",
-                                      ifelse(combined_df$State == "IL" | combined_df$State == "IN" | combined_df$State == "MI" | combined_df$State == "OH" | combined_df$State == "WI", "Great Lakes",
-                                              ifelse(combined_df$State == "IA" | combined_df$State == "KS" | combined_df$State == "MN" | combined_df$State == "MO" | combined_df$State == "NE" | combined_df$State == "ND" | combined_df$State == "SD", "Plains",
-                                                      ifelse(combined_df$State == "AL" | combined_df$State == "AR" | combined_df$State == "FL" | combined_df$State == "GA" | combined_df$State == "KY" | combined_df$State == "LA" | combined_df$State == "MS" | combined_df$State == "NC" | combined_df$State == "SC" | combined_df$State == "TN" | combined_df$State == "VA" | combined_df$State == "WV", "Southeast",
-                                                              ifelse(combined_df$State == "AZ" | combined_df$State == "NM" | combined_df$State == "OK" | combined_df$State == "TX", "Southwest",
-                                                                      ifelse(combined_df$State == "CO" | combined_df$State == "ID" | combined_df$State == "MT" | combined_df$State == "UT" | combined_df$State == "WY", "Rocky Mountain",
-                                                                              ifelse(combined_df$State == "AK" | combined_df$State == "CA" | combined_df$State == "HI" | combined_df$State == "NV" | combined_df$State == "OR" | combined_df$State == "WA", "Far West", "Other"))))))))
-  
+drug_df2$Indicator <- sapply(unique_indicator, paste, collapse = ",")
+
+df <- left_join(drug_df2, homeless_df, by = c("State.Name" = "State"))
+
+df$region <- ifelse(df$State == "CT" | df$State == "ME" | df$State == "MA" | df$State == "NH" | df$State == "RI" | df$State == "VT", "New England",
+                              ifelse(df$State == "DE" | df$State == "DC" | df$State == "MD" | df$State == "NJ" | df$State == "NY" | df$State == "PA", "Mideast",
+                                      ifelse(df$State == "IL" | df$State == "IN" | df$State == "MI" | df$State == "OH" | df$State == "WI", "Great Lakes",
+                                              ifelse(df$State == "IA" | df$State == "KS" | df$State == "MN" | df$State == "MO" | df$State == "NE" | df$State == "ND" | df$State == "SD", "Plains",
+                                                      ifelse(df$State == "AL" | df$State == "AR" | df$State == "FL" | df$State == "GA" | df$State == "KY" | df$State == "LA" | df$State == "MS" | df$State == "NC" | df$State == "SC" | df$State == "TN" | df$State == "VA" | df$State == "WV", "Southeast",
+                                                              ifelse(df$State == "AZ" | df$State == "NM" | df$State == "OK" | df$State == "TX", "Southwest",
+                                                                      ifelse(df$State == "CO" | df$State == "ID" | df$State == "MT" | df$State == "UT" | df$State == "WY", "Rocky Mountain",
+                                                                              ifelse(df$State == "AK" | df$State == "CA" | df$State == "HI" | df$State == "NV" | df$State == "OR" | df$State == "WA", "Far West", "Other"))))))))
+
+veterans_homeless <- sum(df$Veterans.Experiencing.Homelessness)
+df$Veteran_Homelessness_Ratio <- (df$Veterans.Experiencing.Homelessness/veterans_homeless) * 100
+
+state_grouped <- group_by(df, State.Name)
+state_total_homeless <- summarize(state_grouped, total_homeless = sum(Total.Homeless))
+state_total_overdose_death <- summarize(state_grouped, total_overdose_death = sum(Predicted.Value))
+state_total <- merge(state_total_homeless, state_total_overdose_death, by = "State.Name", all = TRUE)
