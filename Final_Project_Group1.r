@@ -1,5 +1,6 @@
 library(dplyr)
 library(stringr)
+library(ggplot2)
 
 homeless_df <- read.csv("2022_Homeless_Population_by_State.csv")
 drug_df <- read.csv("2022_VSRR_Provisional_Drug_Overdose_Death_Counts.csv")
@@ -47,3 +48,30 @@ state_grouped <- group_by(df, State.Name)
 state_total_homeless <- summarize(state_grouped, total_homeless = sum(Total.Homeless))
 state_total_overdose_death <- summarize(state_grouped, total_overdose_death = sum(Predicted.Value))
 state_total <- merge(state_total_homeless, state_total_overdose_death, by = "State.Name", all = TRUE)
+
+
+barplot_homelessness <- ggplot(data = df, aes(x = region, y = Total.Homeless, fill = region)) +
+  geom_col() +
+  labs(x = "Region In US", y = "Number Of Homelessness", title = "Region vs Number Of People Experiencing Homelessness", 
+       caption = "The total number of people expreincing homelessness in each state and is added to the corresponding region")
+barplot_homelessness
+
+scatter_homeless <- ggplot(data = df) + 
+  geom_point(mapping = aes(x = State.Name, y = Total.Homeless, color = region)) +
+  labs(x = "State In US", y = "Number Of People Experiencing Homelessness", title = "State vs Number Of People Experiencing Homelessness",
+       caption = "The total number of people experiencing homelessness in each state") +
+  theme(axis.text.x = element_text(angle = 90))
+scatter_homeless
+
+high_inc_barplot <- ggplot(data = df, aes(x = region, y = Predicted.Value, fill = region)) +
+  geom_col() +
+  labs(x = "Region In US", y = "Number Of People Who Overdosed", title = "Region vs Number Of People Who Overdosed",
+       caption = "The total number of people who overdosed in each state is added to the corresponding region") 
+high_inc_barplot
+
+inc_scatter <-  ggplot(data = df) + 
+  geom_point(mapping = aes(x = State.Name, y = Predicted.Value, color = region)) +
+  labs(x = "State In US", y = "Number Of People Who Overdosed", title = "State vs Number Of People Who Overdosed", 
+       caption = "The total number of people who overdosed in each state") + 
+  theme(axis.text.x = element_text(angle = 90))
+inc_scatter
