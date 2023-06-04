@@ -91,7 +91,5 @@ inc_scatter
 bubble_plot_homeless <- ggplot(data = df, aes(x=Predicted.Value, y=Total.Homeless, color = region)) +
   geom_point(alpha=0.7) +
   scale_size(range = c(1.4, 19), name="Total Homeless") +
-  scale_color_viridis(discrete=TRUE, guide=FALSE) +
-  theme_ipsum() +
   theme(legend.position="none")
 bubble_plot_homeless
