@@ -1,7 +1,8 @@
 library(shiny)
 library(ggplot2)
 library(plotly)
-library(treemap)
+library(dplyr)
+library(stringr)
 
 source("Final_Project_Group1.R")
 
@@ -230,8 +231,6 @@ server <- function(input, output) {
     bubble_plot <- ggplot(data = df, aes(x=Predicted.Value, y=Total.Homeless, color = region)) +
       geom_point(alpha=0.7) +
       scale_size(range = c(1.4, 19), name="Total Homeless") +
-      scale_color_viridis(discrete=TRUE, guide=FALSE) +
-      theme_ipsum() +
       geom_text(data = subset(df, State.Name == input$selected_state),
                 aes(label = input$selected_state),
                 vjust = -0.5,
