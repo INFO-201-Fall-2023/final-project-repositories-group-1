@@ -33,13 +33,13 @@ drug_df2$Indicator <- sapply(unique_indicator, paste, collapse = ",")
 df <- left_join(drug_df2, homeless_df, by = c("State.Name" = "State"))
 
 df$region <- ifelse(df$State == "CT" | df$State == "ME" | df$State == "MA" | df$State == "NH" | df$State == "RI" | df$State == "VT", "New England",
-                              ifelse(df$State == "DE" | df$State == "DC" | df$State == "MD" | df$State == "NJ" | df$State == "NY" | df$State == "PA", "Mideast",
-                                      ifelse(df$State == "IL" | df$State == "IN" | df$State == "MI" | df$State == "OH" | df$State == "WI", "Great Lakes",
-                                              ifelse(df$State == "IA" | df$State == "KS" | df$State == "MN" | df$State == "MO" | df$State == "NE" | df$State == "ND" | df$State == "SD", "Plains",
-                                                      ifelse(df$State == "AL" | df$State == "AR" | df$State == "FL" | df$State == "GA" | df$State == "KY" | df$State == "LA" | df$State == "MS" | df$State == "NC" | df$State == "SC" | df$State == "TN" | df$State == "VA" | df$State == "WV", "Southeast",
-                                                              ifelse(df$State == "AZ" | df$State == "NM" | df$State == "OK" | df$State == "TX", "Southwest",
-                                                                      ifelse(df$State == "CO" | df$State == "ID" | df$State == "MT" | df$State == "UT" | df$State == "WY", "Rocky Mountain",
-                                                                              ifelse(df$State == "AK" | df$State == "CA" | df$State == "HI" | df$State == "NV" | df$State == "OR" | df$State == "WA", "Far West", "Other"))))))))
+                    ifelse(df$State == "DE" | df$State == "DC" | df$State == "MD" | df$State == "NJ" | df$State == "NY" | df$State == "PA", "Mideast",
+                           ifelse(df$State == "IL" | df$State == "IN" | df$State == "MI" | df$State == "OH" | df$State == "WI", "Great Lakes",
+                                  ifelse(df$State == "IA" | df$State == "KS" | df$State == "MN" | df$State == "MO" | df$State == "NE" | df$State == "ND" | df$State == "SD", "Plains",
+                                         ifelse(df$State == "AL" | df$State == "AR" | df$State == "FL" | df$State == "GA" | df$State == "KY" | df$State == "LA" | df$State == "MS" | df$State == "NC" | df$State == "SC" | df$State == "TN" | df$State == "VA" | df$State == "WV", "Southeast",
+                                                ifelse(df$State == "AZ" | df$State == "NM" | df$State == "OK" | df$State == "TX", "Southwest",
+                                                       ifelse(df$State == "CO" | df$State == "ID" | df$State == "MT" | df$State == "UT" | df$State == "WY", "Rocky Mountain",
+                                                              ifelse(df$State == "AK" | df$State == "CA" | df$State == "HI" | df$State == "NV" | df$State == "OR" | df$State == "WA", "Far West", "Other"))))))))
 
 veterans_homeless <- sum(df$Veterans.Experiencing.Homelessness)
 df$Veteran_Homelessness_Ratio <- (df$Veterans.Experiencing.Homelessness/veterans_homeless) * 100
@@ -48,6 +48,18 @@ state_grouped <- group_by(df, State.Name)
 state_total_homeless <- summarize(state_grouped, total_homeless = sum(Total.Homeless))
 state_total_overdose_death <- summarize(state_grouped, total_overdose_death = sum(Predicted.Value))
 state_total <- merge(state_total_homeless, state_total_overdose_death, by = "State.Name", all = TRUE)
+
+#regions df starts here
+aggregated_data <- aggregate(df[, c("Total.Homeless", "Predicted.Value", "Total.Family.Households.Experiencing.Homelessness", "Veterans.Experiencing.Homelessness", "Persons.Experiencing.Chronic.Homelessness", "Unaccompanied.Young.Adults..Aged.18.24..Experiencing.Homelessness")], 
+                             by = list(df$region), FUN = sum)
+
+regions_df <- data.frame(region = aggregated_data$Group.1,
+                         total_homeless = aggregated_data$Total.Homeless,
+                         total_overdose = aggregated_data$Predicted.Value,
+                         total_family_households_experiencing_homelessness = aggregated_data$Total.Family.Households.Experiencing.Homelessness,
+                         veterans_experiencing_homelessness = aggregated_data$Veterans.Experiencing.Homelessness,
+                         persons_experiencing_chronic_homelessness = aggregated_data$Persons.Experiencing.Chronic.Homelessness,
+                         unaccompanied_adults_aged_18_to_24_experiencing_homelessness = aggregated_data$Unaccompanied.Young.Adults..Aged.18.24..Experiencing.Homelessness)
 
 
 barplot_homelessness <- ggplot(data = df, aes(x = region, y = Total.Homeless, fill = region)) +
@@ -75,3 +87,11 @@ inc_scatter <-  ggplot(data = df) +
        caption = "The total number of people who overdosed in each state") + 
   theme(axis.text.x = element_text(angle = 90))
 inc_scatter
+
+bubble_plot_homeless <- ggplot(data = df, aes(x=Predicted.Value, y=Total.Homeless, color = region)) +
+  geom_point(alpha=0.7) +
+  scale_size(range = c(1.4, 19), name="Total Homeless") +
+  scale_color_viridis(discrete=TRUE, guide=FALSE) +
+  theme_ipsum() +
+  theme(legend.position="none")
+bubble_plot_homeless
